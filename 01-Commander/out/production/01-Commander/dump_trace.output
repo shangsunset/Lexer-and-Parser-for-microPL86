@@ -1,0 +1,12 @@
+14
+C changed from 14 to 8
+6
+This is a string
+D changed from "This is a string" to "Hello World"
+
+Dump
+----
+A: 6
+C: 8
+B: 12
+D: Hello World

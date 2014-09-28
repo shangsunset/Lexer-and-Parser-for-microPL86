@@ -1,0 +1,8 @@
+      LOAD    X
+      ADD     Y
+      DIV     TWO	
+      STORE   AVG
+      HALT
+VAR	  X       10
+VAR	  Y       20
+VAR	  TWO     2
