@@ -3,7 +3,7 @@ import java.io.FileReader;
 import java.util.Scanner;
 
 public class Micro86 {
-    private static int memory[] = new int[10];
+    private static int memory[] = new int[20];
     private static String filename = null;
     private static int lenOfProgm = 0;
     private static int ip = 0;
@@ -14,6 +14,7 @@ public class Micro86 {
     private static int operand = 0;
     private static boolean dump = false;
     private static boolean trace = false;
+    private static boolean isHalt = false;
 
 
 
@@ -22,10 +23,12 @@ public class Micro86 {
         processCommandLine(args);
         bootUp();
 
-        while (true) {
+        while (!isHalt) {
             fetch();
             execute();
         }
+        if(isHalt && dump)
+            postMortemDumps();
 
 
     }
@@ -35,9 +38,15 @@ public class Micro86 {
             memory[i] = 0;
 
         }
+
+        System.out.println("================================\n"
+                + "Micro86 Emulator version 1.0\n================================\n\n");
         loader();
         printMemory();
         printDissembled();
+
+        if(trace)
+            System.out.println("===== Execution Trace =====\n\n" + "\t\t\t" + dumpRegister());
     }
 
 
@@ -57,8 +66,11 @@ public class Micro86 {
     }
 
     private static String hexBeautify(String hex) {
-        if (hex.length() == 1) {
-            hex = "0000000" + hex.toUpperCase();
+        String zeros = "";
+        if (hex.length() < 8) {
+            for (int i=0; i<8-hex.length(); i++)
+                zeros += "0";
+            hex =zeros + hex.toUpperCase();
             return hex;
         }
         else {
@@ -68,40 +80,6 @@ public class Micro86 {
 
     }
 
-
-    static void processCommandLine(String [] args) {
-        boolean sawAnError = false;
-
-        for (String arg : args) {
-            if (arg.startsWith("-")) {
-                if (arg.substring(1).equals("d"))
-                    dump = true;
-
-
-                else if (arg.substring(1).equals("t")) {
-                    trace = true;
-
-                }
-
-                else {
-                    System.err.println("Unknown option " + arg);
-                    sawAnError = true;
-                }
-            }
-            else
-                filename = arg;
-        }
-
-        if (filename == null) {		// filename MUST be present on command-line
-            System.err.println("Missing filename");
-            sawAnError = true;
-        }
-
-        if (sawAnError) {
-            System.err.println("Usage: Commander {-dump} {-trace} <filename>");
-            System.exit(1);
-        }
-    }
 
     private static Scanner InstructionScanner() {
 
@@ -117,6 +95,7 @@ public class Micro86 {
         return null;
 
     }
+
 
     private static void loader() {
         Scanner scanner = InstructionScanner();
@@ -143,13 +122,19 @@ public class Micro86 {
 
         switch (opcode) {
             case OpCode.LOAD:
-                return "LOAD " + "0000000" + operand;
+                return "LOAD " + hexBeautify(operand);
             case OpCode.STORE:
-                return  "STORE " + "0000000" + operand;
+                return "STORE " + hexBeautify(operand);
+            case OpCode.ADD:
+                return "ADD " + hexBeautify(operand);
+            case OpCode.DIV:
+                return "DIV " + hexBeautify(operand);
+            case OpCode.DIVI:
+                return "DIVI " + hexBeautify(operand);
             case OpCode.HALT:
                 return "HALT";
             case 0:
-                return "0000000" + operand.toUpperCase();
+                return hexBeautify(operand);
         }
 
         return null;
@@ -195,16 +180,21 @@ public class Micro86 {
             switch (opcode) {
                 case OpCode.LOAD:
                     acc = memory[operand];
-                    System.out.println("0000000" + ip + ": " + dumpMemory(ir) + "\t" + dumpRegister());
                     break;
                 case OpCode.STORE:
                     memory[operand] = acc;
-                    System.out.println("0000000" + ip + ": " + dumpMemory(ir) + "\t" + dumpRegister());
+                    break;
+                case OpCode.ADD:
+                    acc = acc + memory[operand];
+                    break;
+                case OpCode.DIV:
+                    acc = acc/memory[operand];
+                    break;
+                case OpCode.DIVI:
+                    acc = acc/operand;
                     break;
                 case OpCode.HALT:
-                    System.out.println("0000000" + ip + ": " + dumpMemory(ir) + "\t" + dumpRegister());
-                    postMortemDumps();
-                    System.exit(0);
+                    isHalt = true;
                     break;
                 default:
                     throw new Exception("Opcode Violation");
@@ -214,12 +204,13 @@ public class Micro86 {
         } catch (Exception e) {
             System.err.println("Micro86Error: " + e.getMessage());
         }
+        if (trace)
+            System.out.println("0000000" + ip + ": " + dumpMemory(ir) + "\t" + dumpRegister());
 
     }
 
     private static String dumpRegister() {
 
-//            System.out.println("===== Execution Trace =====");
         return ("acc: " + hexBeautify(Integer.toHexString(acc)) + " " +
                 "ip: " + hexBeautify(Integer.toHexString(ip)) + " " +
                 "flags: " + hexBeautify(Integer.toHexString(flags)) + " " +
@@ -234,4 +225,39 @@ public class Micro86 {
         printMemory();
     }
 
+
+    static void processCommandLine(String [] args) {
+        boolean sawAnError = false;
+
+        for (String arg : args) {
+            if (arg.startsWith("-")) {
+                if (arg.substring(1).equals("d"))
+                    dump = true;
+
+
+                else if (arg.substring(1).equals("t")) {
+                    trace = true;
+
+                }
+
+                else {
+                    System.err.println("Unknown option " + arg);
+                    sawAnError = true;
+                }
+            }
+            else
+                filename = arg;
+        }
+
+        if (filename == null) {		// filename MUST be present on command-line
+            System.err.println("Missing filename");
+            sawAnError = true;
+        }
+
+        if (sawAnError) {
+            System.err.println("Usage: Commander {-d} {-t} <flename>");
+            System.exit(1);
+        }
+    }
 }
+
