@@ -1,9 +1,10 @@
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Micro86 {
-    private static int memory[] = new int[20];
+    private static int memory[] = new int[50];
     private static String filename = null;
     private static int lenOfProgm = 0;
     private static int ip = 0;
@@ -46,7 +47,7 @@ public class Micro86 {
         printDissembled();
 
         if(trace)
-            System.out.println("===== Execution Trace =====\n\n" + "\t\t\t" + dumpRegister());
+            System.out.println("===== Execution Trace =====\n\n" + "\t\t\t\t\t\t" + dumpRegister());
     }
 
 
@@ -55,7 +56,7 @@ public class Micro86 {
         System.out.println("-------  Memory  ------");
         for (int j=0; j<memory.length; j++) {
             hex = dumpMemory(memory[j]);
-            System.out.println("0000000" + j + ": " + hex);
+            System.out.println(hexBeautify(Integer.toHexString(j)) + ": " + hex);
         }
         System.out.println("----------------------\n\n");
     }
@@ -73,6 +74,8 @@ public class Micro86 {
             hex =zeros + hex.toUpperCase();
             return hex;
         }
+        else if (!hex.startsWith("0"))
+            return hex;
         else {
             hex = "0" + hex;
             return hex;
@@ -123,14 +126,42 @@ public class Micro86 {
         switch (opcode) {
             case OpCode.LOAD:
                 return "LOAD " + hexBeautify(operand);
+            case OpCode.LOADI:
+                return "LOADI " + hexBeautify(operand);
             case OpCode.STORE:
                 return "STORE " + hexBeautify(operand);
             case OpCode.ADD:
                 return "ADD " + hexBeautify(operand);
+            case OpCode.ADDI:
+                return "ADDI " + hexBeautify(operand);
             case OpCode.DIV:
                 return "DIV " + hexBeautify(operand);
+            case OpCode.MULI:
+                return "MULI " + hexBeautify(operand);
+            case OpCode.JMPI:
+                return "JMPI " + hexBeautify(operand);
+            case OpCode.CMP:
+                return "CMP " + hexBeautify(operand);
+            case OpCode.CMPI:
+                return "CMPI " + hexBeautify(operand);
+            case OpCode.JGI:
+                return "JGI " + hexBeautify(operand);
+            case OpCode.JGEI:
+                return "JGEI " + hexBeautify(operand);
+            case OpCode.JNEI:
+                return "JNEI " + hexBeautify(operand);
             case OpCode.DIVI:
                 return "DIVI " + hexBeautify(operand);
+            case OpCode.JEI:
+                return "JEI " + hexBeautify(operand);
+            case OpCode.SUBI:
+                return "SUBI " + hexBeautify(operand);
+            case OpCode.MOD:
+                return "MOD " + hexBeautify(operand);
+            case OpCode.IN:
+                return "IN";
+            case OpCode.OUT:
+                return "OUT";
             case OpCode.HALT:
                 return "HALT";
             case 0:
@@ -144,7 +175,7 @@ public class Micro86 {
     private static void printDissembled() {
         System.out.println("\n\n===== Dissembled Code =====\n\n");
         for (int i=0; i<memory.length; i++) {
-            System.out.println("0000000" + i + ": " + dissembler(memory[i]));
+            System.out.println(hexBeautify(Integer.toHexString(i)) + ": " + dissembler(memory[i]));
 
         }
         System.out.println("\n\n===========================\n\n");
@@ -181,11 +212,20 @@ public class Micro86 {
                 case OpCode.LOAD:
                     acc = memory[operand];
                     break;
+                case OpCode.LOADI:
+                    acc = operand;
+                    break;
+                case OpCode.ADDI:
+                    acc += operand;
+                    break;
                 case OpCode.STORE:
                     memory[operand] = acc;
                     break;
                 case OpCode.ADD:
                     acc = acc + memory[operand];
+                    break;
+                case OpCode.SUBI:
+                    acc -= operand;
                     break;
                 case OpCode.DIV:
                     acc = acc/memory[operand];
@@ -193,11 +233,56 @@ public class Micro86 {
                 case OpCode.DIVI:
                     acc = acc/operand;
                     break;
+                case OpCode.JMPI:
+                    ip = operand;
+                    break;
+                case OpCode.MULI:
+                    acc = acc * operand;
+                    break;
+                case OpCode.MUL:
+                    acc = acc * memory[operand];
+                    break;
+                case OpCode.CMP:
+                    setFlag(acc - memory[operand]);
+                    break;
+                case OpCode.CMPI:
+                    setFlag(acc - operand);
+                    break;
+                case OpCode.JEI:
+                    if ((flags & 0x00000001) != 0)
+                        ip = operand;
+                        break;
+                case OpCode.JGI:
+                    if ((flags & 0X00000002) == 0 && (flags & 0x00000001) == 0)
+                        ip = operand;
+                        break;
+                case OpCode.JGEI:
+                    if ((flags & 0x00000001) != 0 || (flags & 0x00000002) == 0)
+                        ip = operand;
+                    break;
+                case OpCode.JNEI:
+                    if ((flags & 0x00000001) ==0)
+                        ip = operand;
+                        break;
+                case OpCode.MOD:
+                    acc = acc % memory[operand];
+                    break;
+                case OpCode.OUT:
+                    System.out.println("OUT " + (char)acc);
+                    break;
+                case OpCode.IN:
+                    try {
+                        System.out.println("IN:");
+                        acc = System.in.read();
+                    } catch (IOException e) {
+                        System.err.println("IOExceptionError: " + e.getMessage());
+                    }
+                    break;
                 case OpCode.HALT:
                     isHalt = true;
                     break;
                 default:
-                    throw new Exception("Opcode Violation");
+                    throw new Exception("Opcode does not exist");
 
 
             }
@@ -205,7 +290,9 @@ public class Micro86 {
             System.err.println("Micro86Error: " + e.getMessage());
         }
         if (trace)
-            System.out.println("0000000" + ip + ": " + dumpMemory(ir) + "\t" + dumpRegister());
+            System.out.println(hexBeautify(Integer.toHexString(ip)) + ": " + dumpMemory(ir) + "\t" +
+                    "|" + hexBeautify(Integer.toHexString(operand)) + ": " +
+                    hexBeautify(Integer.toHexString(acc)) + "|" + "\t" + dumpRegister());
 
     }
 
@@ -225,6 +312,25 @@ public class Micro86 {
         printMemory();
     }
 
+
+
+
+    static void setFlag(int result) {
+        flags = 0x00000000;
+
+        if (result == 0)
+            flags = 0x00000001;
+        else {
+            if (result < 0)
+                flags = 0x00000002;
+            else
+                flags = 0x00000000;
+
+        }
+
+
+
+    }
 
     static void processCommandLine(String [] args) {
         boolean sawAnError = false;
