@@ -8,7 +8,8 @@ public class Assembler {
     private static boolean dump = false;
     private static boolean trace = false;
     private static Vector<String> instructionVector = new Vector<String>();
-    private static int location = 0;
+    private static Vector<Integer> machineCodeInstructionVector = new Vector<Integer>();
+    private static int numOfInstructions = 0;
     private static Map<String, Integer> declarationTable = new TreeMap<String, Integer>();
     private static Map<String, String> instructionTable = new TreeMap<String, String>();
 
@@ -17,6 +18,9 @@ public class Assembler {
 
         processCommandLine(args);
         instructionReader();
+        instructionProcessor();
+        for (int word : machineCodeInstructionVector)
+            System.out.println(word);
     }
 
 
@@ -28,12 +32,12 @@ public class Assembler {
                 String instruction = sc.nextLine();
                 instructionVector.add(instruction);
                 if (!instruction.startsWith("VAR")) {
-                    location++;
+                    numOfInstructions++;
                     String[] tokens = instruction.trim().split("\\s+");
                     if (!tokens[0].equals("HALT")) {
                         instructionTable.put(tokens[0], tokens[1]);
-//                        for (String token : tokens)
-//                            System.out.println(token);
+                        /* for (String token : tokens) */
+                        /*     System.out.println(token); */
                     }
                 }
                 else {
@@ -43,8 +47,6 @@ public class Assembler {
                 }
 
             }
-            for (String var:instructionTable.keySet())
-                System.out.println(var + ":" + instructionTable.get(var));
 
         }
         catch(FileNotFoundException e) {
@@ -55,16 +57,42 @@ public class Assembler {
     }
 
 
-    static void instructionProccessor () {
+    static void instructionProcessor () {
 
+        int opCode, operand, word;
         for (String instruction : instructionVector) {
 
-            Scanner instructionScanner = new Scanner(instruction);
-            while (instructionScanner.hasNext()) {
+            String tokens[] = instruction.trim().split("\\s+");
+                if (!instruction.startsWith("VAR")) {
 
-            }
+
+                    if (!tokens[0].equals("HALT")) {
+
+                        opCode = OpCode.opCodeTable.get(tokens[0]);
+                        operand = (Character.isLetter(tokens[1].charAt(0))) ? numOfInstructions+1 : Integer.parseInt(tokens[1]);
+                        numOfInstructions++;
+
+                    }
+                    else {
+                        opCode = OpCode.opCodeTable.get(tokens[0]);
+                        operand = 0;
+                    }
+
+
+                    word = (opCode << 16) | operand;
+                    machineCodeInstructionVector.add(word);
+                }
+                if (instruction.startsWith("VAR")) {
+                    opCode = 0;
+                    operand = declarationTable.get(tokens[1]);
+                    word = (opCode << 16) | operand;
+                    machineCodeInstructionVector.add(word);
+                }
+
         }
+
     }
+
 
     static void processCommandLine(String [] args) {
         boolean sawAnError = false;
