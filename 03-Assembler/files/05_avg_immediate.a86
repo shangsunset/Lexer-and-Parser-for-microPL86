@@ -1,0 +1,10 @@
+; Sample program (Same as above but with an immediate divide by 2)
+
+	LOAD		X
+	ADD		    Y
+	DIVI		2
+	STORE	    AVG
+	HALT
+VAR	X		    10
+VAR	Y		    20
+VAR	AVG		    0

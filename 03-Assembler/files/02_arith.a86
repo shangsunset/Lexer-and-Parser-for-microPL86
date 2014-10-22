@@ -1,0 +1,7 @@
+	    LOAD	X
+	    ADD	    ONE
+	    STORE	Y
+	    HALT
+VAR	    X	    10
+VAR	    Y	    0
+VAR     ONE	    1

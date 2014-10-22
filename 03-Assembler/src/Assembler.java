@@ -7,20 +7,27 @@ public class Assembler {
     private static String filename = null;
     private static boolean dump = false;
     private static boolean trace = false;
+    private static int numOfInstructions = 0;
     private static Vector<String> instructionVector = new Vector<String>();
     private static Vector<Integer> machineCodeInstructionVector = new Vector<Integer>();
-    private static int numOfInstructions = 0;
-    private static Map<String, Integer> declarationTable = new TreeMap<String, Integer>();
-    private static Map<String, String> instructionTable = new TreeMap<String, String>();
+    private static Map<String, Integer> declarationTable = new HashMap<String, Integer>();
+    private static Map<String, Integer> variableAddressTable = new HashMap<String, Integer>();
+    private static Map<String, Integer> labelAddressTable = new HashMap<String, Integer>();
 
 
     public static void main(String[] args) {
 
         processCommandLine(args);
         instructionReader();
+//        for (String line:instructionVector)
+//            System.out.println(line);
+//        for (String i:variableAddressTable.keySet())
+//            System.out.println(i + ":" + variableAddressTable.get(i));
+//        for (String l:labelAddressTable.keySet())
+//            System.out.println(l + ":" + labelAddressTable.get(l));
         instructionProcessor();
         for (int word : machineCodeInstructionVector)
-            System.out.println(word);
+            System.out.println(hexBeautify(Integer.toHexString(word)));
     }
 
 
@@ -29,21 +36,25 @@ public class Assembler {
         try {
             Scanner sc = new Scanner(new FileReader(filename));
             while (sc.hasNextLine()) {
-                String instruction = sc.nextLine();
-                instructionVector.add(instruction);
-                if (!instruction.startsWith("VAR")) {
+                String instruction = sc.nextLine().trim();
+                String[] symbols = instruction.trim().split("\\s+");
+
+                if (!instruction.startsWith("VAR") && !instruction.isEmpty() && instruction.charAt(0) != ';') {
+
+                    instructionVector.add(instruction);
                     numOfInstructions++;
-                    String[] tokens = instruction.trim().split("\\s+");
-                    if (!tokens[0].equals("HALT")) {
-                        instructionTable.put(tokens[0], tokens[1]);
-                        /* for (String token : tokens) */
-                        /*     System.out.println(token); */
+                    if (instruction.charAt(0) == ':') {
+                        String[] labels = symbols[0].split(":");
+                        labelAddressTable.put(labels[1], numOfInstructions-1);
+
                     }
                 }
-                else {
+                if (instruction.startsWith("VAR")){
+                    instructionVector.add(instruction);
+                    numOfInstructions++;
+                    declarationTable.put(symbols[1], Integer.parseInt(symbols[2]));
+                    variableAddressTable.put(symbols[1], numOfInstructions-1);
 
-                    String[] declaration = instruction.trim().split("\\s+");
-                    declarationTable.put(declaration[1], Integer.parseInt(declaration[2]));
                 }
 
             }
@@ -63,17 +74,32 @@ public class Assembler {
         for (String instruction : instructionVector) {
 
             String tokens[] = instruction.trim().split("\\s+");
-                if (!instruction.startsWith("VAR")) {
+                if (!instruction.startsWith("VAR") && !instruction.trim().isEmpty() && instruction.charAt(0) != ';') {
 
 
-                    if (!tokens[0].equals("HALT")) {
+                    if (!tokens[0].equals("HALT")){
 
-                        opCode = OpCode.opCodeTable.get(tokens[0]);
-                        operand = (Character.isLetter(tokens[1].charAt(0))) ? numOfInstructions+1 : Integer.parseInt(tokens[1]);
-                        numOfInstructions++;
+                        if (instruction.charAt(0) == 'J') {
+                            opCode = OpCode.opCodeTable.get(tokens[0]);
+                            operand = (Character.isLetter(tokens[1].charAt(0))) ? labelAddressTable.get(tokens[1]) : Integer.parseInt(tokens[1]);
+
+
+                        }
+                        else if (instruction.charAt(0) == ':') {
+                            opCode = OpCode.opCodeTable.get(tokens[1]);
+                            operand = (Character.isLetter(tokens[2].charAt(0))) ? variableAddressTable.get(tokens[2]) : Integer.parseInt(tokens[2]);
+
+                        }
+                        else {
+                            opCode = OpCode.opCodeTable.get(tokens[0]);
+                            operand = (Character.isLetter(tokens[1].charAt(0))) ? variableAddressTable.get(tokens[1]) : Integer.parseInt(tokens[1]);
+                            numOfInstructions++;
+
+                        }
 
                     }
                     else {
+
                         opCode = OpCode.opCodeTable.get(tokens[0]);
                         operand = 0;
                     }
@@ -93,6 +119,24 @@ public class Assembler {
 
     }
 
+
+
+    static String hexBeautify(String hex) {
+        String zeros = "";
+        if (hex.length() < 8) {
+            for (int i=0; i<8-hex.length(); i++)
+                zeros += "0";
+            hex =zeros + hex.toUpperCase();
+            return hex;
+        }
+        else if (!hex.startsWith("0"))
+            return hex;
+        else {
+            hex = "0" + hex;
+            return hex;
+        }
+
+    }
 
     static void processCommandLine(String [] args) {
         boolean sawAnError = false;

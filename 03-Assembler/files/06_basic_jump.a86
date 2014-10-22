@@ -1,0 +1,9 @@
+; Sample program - testing an unconditional jump
+
+		LOAD		X
+		JMPI		SKIP
+		MULI		2
+:SKIP:	STORE	    Y
+		HALT
+VAR		X		    10
+VAR		Y		    0
