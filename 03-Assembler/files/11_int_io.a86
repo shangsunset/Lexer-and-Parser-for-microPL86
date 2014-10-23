@@ -1,0 +1,59 @@
+; Sample Program (reading in a multi-digit number from the keyboard and then printing it out its double)
+
+		LOADI	0
+		STORE	Num
+
+; builds Num by reading in bytes until whitespace (blank or newline)
+;	and converting them to digits
+		IN				; prime the pump -- read in first byte
+:Loop1:	CMPI		32		; blank?
+		JEI		Next1
+		CMPI		13		; newline?
+		JEI		Next1
+		SUBI		48
+		STORE	C
+		LOAD 	Num
+		MULI		10
+		ADD		C
+		STORE	Num
+		IN
+		JMPI		Loop1
+
+; Number has been read in -- double it, then print it
+
+:Next1:	LOAD		Num
+		MULI		2
+		STORE	Num
+
+; calculates Divisor = largest power of 10 less than the value in Num
+		LOADI	1
+		STORE	Divisor
+:Loop2:	LOAD		Divisor
+		MULI		10
+		CMP 		Num
+		JGEI		Loop3
+		STORE	Divisor
+		JMPI 	Loop2
+
+; prints out Num by succesively dividing by successivley smaller powers of 10 (in Divisor)
+;	and converting digits back to ASCII
+:Loop3:	LOAD		Num
+		DIV		Divisor
+		ADDI		48
+		OUT
+		LOAD 	Num
+		MOD 		Divisor
+		STORE 	Num
+		LOAD 	Divisor
+		DIVI		10
+		STORE 	Divisor
+		LOAD		Num
+		CMPI		0
+		JNEI		Loop3
+
+		HALT
+
+; Declarations
+VAR		Num		0
+VAR		Divisor	0
+VAR		C		0

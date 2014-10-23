@@ -1,0 +1,15 @@
+; Sample program (max of two numbers)
+
+		LOAD	X
+		CMP		Y
+		JGEI	X_BIG
+
+		LOAD 	Y
+		STORE	MAX
+		HALT
+
+:X_BIG:	STORE 	MAX
+		HALT
+VAR		X		10
+VAR		Y		8
+VAR		MAX		0

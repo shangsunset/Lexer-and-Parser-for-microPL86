@@ -1,0 +1,16 @@
+		LOADI	1
+
+:Loop:	CMP		N
+		JGI		Done
+
+		STORE	I
+		MUL		Result
+		STORE	Result
+		LOAD		I
+		ADDI		1
+		JMPI		Loop
+
+:Done:	HALT
+VAR		N		4
+VAR		Result	1
+VAR		I		0

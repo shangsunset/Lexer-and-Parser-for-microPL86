@@ -1,0 +1,27 @@
+; Sample program (reading in a character and printing the next 5 characters in ASCII order):
+
+		IN				; read an ASCII character, and assign it to C
+		STORE	C
+
+		; I is our loop variable will go from 1 ... 5
+
+		LOADI	1		; initialization of I to 1
+		STORE 	I
+
+:LOOP:	LOAD 	I		; top of the loop
+		CMPI		5		; exit when I goes beyond 5
+		JGI		DONE
+
+		LOAD		C		; print C
+		OUT
+		ADDI		1		; add 1 to the ASCII value of C
+		STORE	C
+
+		LOAD		I		; increment I
+		ADDI		1
+		STORE	I
+		JMPI		LOOP		; back to top of loop
+
+:DONE:	HALT
+VAR		I		0
+VAR		C		0

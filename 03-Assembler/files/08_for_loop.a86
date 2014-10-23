@@ -1,0 +1,23 @@
+		LOADI	24	; assign 24 to x
+		STORE	X
+
+		LOADI	1	; initialize i to 1
+		STORE	I
+
+:LOOP:	LOAD	I	; leave loop when i &gt; 5
+		CMPI	5
+		JGI		NEXT
+
+        LOAD	X	; x = x * 2
+		MULI	2
+		STORE	X
+
+		LOAD	I	; i++
+		ADDI	1
+		STORE	I
+		JMPI	LOOP	; jump to the top of the loop
+
+:NEXT:
+		HALT
+VAR		X		0
+VAR		I		0
