@@ -1,0 +1,26 @@
+# Prints the prime numbers up to an including the integer read in from the keyboard
+
+program
+	int n, candidate;
+	int i;
+	int isPrime, done;                  # no boolean; will use 1/0 as true/false
+
+	read n;
+
+	for candidate = 2, n {
+		isPrime = 1;
+		done = 0;
+		while (done == 0)
+			if (n % i == 0) {
+				done = 1;	          # done is true
+				isPrime = 0;        # isPrime is false
+			}
+			else {
+				i = i + 1;
+				if (i > n/2) 
+					done = 0;      #done is false
+					isPrime = 1;   # isPrime is true
+			}
+		if (isPrime == 1) print candidate;
+	}
+end
