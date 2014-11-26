@@ -1,0 +1,31 @@
+# Prints the prime numbers up to an including the integer read in from the keyboard
+
+program
+	int n, candidate;
+	int i;
+	int true, false;		# instead of boolean
+	int isPrime, done;		# will contain the above 'boolean' values
+
+	true = 1;
+	false = 0;
+
+  read n;
+
+	for (candidate = 2, n) {
+		isPrime = true;
+		done = false;
+		while (done == false)
+			if (n % i == 0) {
+				done = true;
+				isPrime = false;
+			}
+			else {
+				i = i + 1;
+				if (i > n/2) {
+					done = false;	
+					isPrime = true;
+				}
+			}
+		if (isPrime == true) print candidate;
+	}
+end

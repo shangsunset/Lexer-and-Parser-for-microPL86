@@ -1,6 +1,7 @@
 # Prints the prime numbers up to an including the integer read in from the keyboard
 
 program
+
 	int n, candidate;
 	int i;
 	int isPrime, done;                  # no boolean; will use 1/0 as true/false

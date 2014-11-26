@@ -156,8 +156,9 @@ class Lexer {
 					state = START;
 					break;
 					
-				case EOI:  currentToken = new Token(Token.EOI);
-                           break;
+				case EOI: 
+                    currentToken = new Token(Token.EOI);
+                    break;
 
 				default:
 					System.err.println("Unknown state " + state);

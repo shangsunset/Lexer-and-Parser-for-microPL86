@@ -84,6 +84,7 @@ class Token {
         tokMap.put(FOR, "FOR");
         tokMap.put(PRINT, "PRINT");
         tokMap.put(READ, "READ");
+        tokMap.put(ELSE, "ELSE");
     }
 
 
