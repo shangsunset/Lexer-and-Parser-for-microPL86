@@ -1,0 +1,27 @@
+	int n, candidate;
+	int i;
+	int true, false;		# instead of boolean
+	int isPrime, done;		# will contain the above 'boolean' values
+
+	true = 1;
+	false = 0;
+
+	read n;
+
+	for candidate = 2, n {
+		isPrime = 1;
+		done = 0;
+		while (done == false)
+			if (n % i == 0) {
+				done = true;			# done is true
+				isPrime = false;		# isPrime is false
+			}
+			else {
+				i = i + 1;
+				if (i > n/2) 
+					done = false;		#done is false
+					isPrime = true;	# isPrime is true
+			}
+		if (isPrime == true) print candidate;
+	}
+end

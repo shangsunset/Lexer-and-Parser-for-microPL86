@@ -4,6 +4,7 @@ import java.util.Vector;
 
 class MicroPL86 {
 	public static void main(String [] args) throws Exception {
+        
         long startTime = System.nanoTime();
 		processCommandLine(args);
 
@@ -13,16 +14,26 @@ class MicroPL86 {
 		}
 
 		try {
-			new Parser(new Lexer(new File(filename))).parse();
+			Parser parser = new Parser(new Lexer(new File(filename)));
+            parser.parse();
+
             long stopTime = System.nanoTime();
             long elapsedTime = stopTime - startTime;
 			System.out.println("*** Success ***");
+            System.out.println("==== variables ==== \n");
+            for (String lexeme : parser.varTable.keySet()) {
+                System.out.println(parser.varTable.get(lexeme).lexeme);
+            }
             System.out.println("*** Finished in " + elapsedTime/1000000 + " milliseconds. ***");
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		} catch (ParserException e) {
 			System.err.println(e.getMessage());
-		}
+        } catch (VariableExistedException e) {
+            System.err.println(e.getMessage());
+        } catch (VariableNotExistException e) {
+            System.err.println(e.getMessage());
+        }
 	}
 
 	static void processCommandLine(String [] args) {

@@ -1,0 +1,6 @@
+program
+	int n;
+
+  n = 12;
+  x = n + 1;
+end
